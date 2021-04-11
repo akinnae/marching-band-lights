@@ -1,4 +1,5 @@
 // Delay for i milliseconds since the last check
+//    This delay *can* be interrupted.
 void delayMillis(unsigned long int start, unsigned long int i){
   unsigned long int currMillis = 0;
   while((currMillis - start) < i){
