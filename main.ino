@@ -20,6 +20,7 @@ int maxBrightness = 255;           // sets scale of brightness (max value, range
 // Set pattern variables
 volatile int patternId = 0;       // ID of current pattern
 int numPattern = 2;               // total number of patterns
+int colorSetId = 3;
 
 // Set timing details
 unsigned long int interval = 60;
@@ -77,19 +78,30 @@ void loop() {
 // PATTERN 0: SWEEP
 // Sweep colors down all three strips at once in series of four
 static void sweep() {
+  // VARIABLES
+  // Create storage for time markers (allows for synchronization)
   unsigned long int prevMillis, tempPrevMillis;
+  // Choose length of the series that sweeps down the strip
+  int lenSeries = 4;
+  
   for(uint16_t j=0; j<256; j++){
     prevMillis = millis();
-    for(uint16_t i=0; i<34; i++){
+    // max is the number of pixels on each strip (30) plus the number
+    //    of pixels lit at once (lenSeries)
+    for(uint16_t i=0; i<(30+lenSeries); i++){
       tempPrevMillis = millis();
       // Draw a new pixel on each strip
-      strip.setPixelColor(STRIP_A(i)  , wheel((i+j) & brightness)); 
-      strip.setPixelColor(STRIP_B(i)  , wheel((i+j) & brightness)); 
-      strip.setPixelColor(STRIP_C(i)  , wheel((i+j) & brightness)); 
+      //    strip.setPixelColor(a,b) sets the color of pixel #a to 
+      //    color b. wheel() selects rainbow colors.
+      if(i<30){
+        strip.setPixelColor(STRIP_A(i)  , wheel((i+j) & brightness)); 
+        strip.setPixelColor(STRIP_B(i)  , wheel((i+j) & brightness)); 
+        strip.setPixelColor(STRIP_C(i)  , wheel((i+j) & brightness)); 
+      }
       // Erase pixel a few steps back on each strip
-      strip.setPixelColor(STRIP_A(i)-4, 0);
-      strip.setPixelColor(STRIP_B(i)-4, 0);
-      strip.setPixelColor(STRIP_C(i)-4, 0); 
+      strip.setPixelColor(STRIP_A(i)-lenSeries, 0);
+      strip.setPixelColor(STRIP_B(i)-lenSeries, 0);
+      strip.setPixelColor(STRIP_C(i)-lenSeries, 0); 
       // Display changes
       strip.show();
       // Check if pattern has changed; if so, exit
@@ -100,18 +112,43 @@ static void sweep() {
     // Check if pattern has changed; if so, exit
     if(patternId!=0) break;
     // Delay (allows for synchronization) 
-    delayMillis(prevMillis, interval*34);
+    delayMillis(prevMillis, interval*(30+lenSeries));
   }
 }
 
 // PATTERN 1: FLASH
 // Flash entire strip at once, increasing in pace
 static void flash(){
-  
+  strip.fill(wheel(brightness));
+  strip.show();
+
+  strip.clear();
+  strip.show();
 }
 
 // PATTERN 2: GLOWY
 // Entire strip stays lit and slowly changes color
 static void glowy(){
-  
+  uint8_t loopVal;
+  switch(colorSetId){
+    case 0:
+      loopVal = sunset_loop();
+      break;
+    case 1:
+      loopVal = pastel_loop();
+      break;
+    case 2:
+      loopVal = usausa_loop();
+      break;
+    case 3:
+      loopVal = vandal_loop();
+      break;
+    case 4:
+      loopVal = rainbo_loop();
+      break;
+    default:
+      break;
+  }
+  if(loopVal & 0x01)
+    strip.show();
 }
