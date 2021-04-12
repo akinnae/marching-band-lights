@@ -12,6 +12,7 @@
 //  Annika Esau
 //  11 April 2021
 
+// DATA STRUCTURES
 class ColorStrip
 {
 public:
@@ -42,6 +43,7 @@ struct ColorLoop
 };
 
 // COLOR-SET SETUP
+//    (I did make these)
 // COLORSET 0: Sunset colors: light pink, deep red, dark blue
 ColorStrip sunsetStrip(30);
 struct ColorLoop sunsetLoop(1, false, 1);
@@ -62,13 +64,37 @@ struct ColorLoop vandalLoop(1, false, 1);
 ColorStrip rainboStrip(30);
 struct ColorLoop rainboLoop(1, false, 1);
 
-// SHARED FUNCTIONS
-//    This simply lessens excessive duplication below; they apply a color
-//    r-g-b to each of the three strips at location j.
-void setAllColor(uint16_t j, float r, float g, float b){
-  strip.setPixelColor(STRIP_A(j), r, g, b);
-  strip.setPixelColor(STRIP_B(j), r, g, b);
-  strip.setPixelColor(STRIP_C(j), r, g, b);
+// SELECT COLORSET
+//    Selects between the various color sets based on an input id
+//    (I did make this function)
+uint8_t selectColorSet(int id){
+  uint8_t loopVal;
+  // Set colors based on which color set we're using
+  switch(id){
+    // COLORSET 0: Sunset colors: light pink, deep red, dark blue
+    case 0:
+      loopVal = sunset_loop();
+      break;
+    // COLORSET 1: Pastel colors: light purple, light pink, light green, etc.
+    case 1:
+      loopVal = pastel_loop();
+      break;
+    // COLORSET 2: Patriotic/USA colors: red, blue, white
+    case 2:
+      loopVal = usausa_loop();
+      break;
+    // COLORSET 3: Vandal colors: gold, silver, grey, yellow, black
+    case 3:
+      loopVal = vandal_loop();
+      break;
+    // COLORSET 4: Bright rainbow colors: red, orange, yellow, green, blue, purple
+    case 4:
+      loopVal = rainbo_loop();
+      break;
+    default:
+      break;
+  }
+  return loopVal;
 }
 
 // COLORSET 0: SUNSET FUNCTIONS
