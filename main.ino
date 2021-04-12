@@ -80,28 +80,19 @@ void loop() {
 static void sweep() {
   // VARIABLES
   // Create storage for time markers (allows for synchronization)
-  unsigned long int prevMillis, tempPrevMillis;
+  unsigned long int tempPrevMillis;
   // Choose length of the series that sweeps down the strip
   int lenSeries = 4;
-  
-  for(uint16_t j=0; j<256; j++){
-    prevMillis = millis();
-    // max is the number of pixels on each strip (30) plus the number
-    //    of pixels lit at once (lenSeries)
-    for(uint16_t i=0; i<(30+lenSeries); i++){
-      tempPrevMillis = millis();
-      // Draw a new pixel on each strip
-      //    strip.setPixelColor(a,b) sets the color of pixel #a to 
-      //    color b. wheel() selects rainbow colors.
-      if(i<30){
-        strip.setPixelColor(STRIP_A(i)  , wheel((i+j) & brightness)); 
-        strip.setPixelColor(STRIP_B(i)  , wheel((i+j) & brightness)); 
-        strip.setPixelColor(STRIP_C(i)  , wheel((i+j) & brightness)); 
-      }
-      // Erase pixel a few steps back on each strip
-      strip.setPixelColor(STRIP_A(i)-lenSeries, 0);
-      strip.setPixelColor(STRIP_B(i)-lenSeries, 0);
-      strip.setPixelColor(STRIP_C(i)-lenSeries, 0); 
+
+  for(uint16_t i=0; i<(30+lenSeries); i++){
+    tempPrevMillis = millis();
+    if(selectColorSet(colorSetId) & 0x01){
+      // Erase all pixels before the lit series
+      for(int j=0; j<i; j++)
+        setAllColor(j-lenSeries, 0, 0, 0);
+      // Erase all pixels after the lit series
+      for(int j=i; j<30; j++)
+        setAllColor(j+1, 0, 0, 0);
       // Display changes
       strip.show();
       // Check if pattern has changed; if so, exit
@@ -109,46 +100,27 @@ static void sweep() {
       // Delay (allows for synchronization) 
       delayMillis(tempPrevMillis, interval);
     }
-    // Check if pattern has changed; if so, exit
-    if(patternId!=0) break;
-    // Delay (allows for synchronization) 
-    delayMillis(prevMillis, interval*(30+lenSeries));
   }
 }
 
 // PATTERN 1: FLASH
 // Flash entire strip at once, increasing in pace
+// TO DO: Add looping and timing
 static void flash(){
-  strip.fill(wheel(brightness));
+  // Turn strip on
+  selectColorSet(colorSetId);
   strip.show();
 
+  // Turn strip off
   strip.clear();
   strip.show();
 }
 
 // PATTERN 2: GLOWY
 // Entire strip stays lit and slowly changes color
+//    Support functions are found in color-sets.ino.
 static void glowy(){
-  uint8_t loopVal;
-  switch(colorSetId){
-    case 0:
-      loopVal = sunset_loop();
-      break;
-    case 1:
-      loopVal = pastel_loop();
-      break;
-    case 2:
-      loopVal = usausa_loop();
-      break;
-    case 3:
-      loopVal = vandal_loop();
-      break;
-    case 4:
-      loopVal = rainbo_loop();
-      break;
-    default:
-      break;
-  }
-  if(loopVal & 0x01)
+  if(selectColorSet(colorSetId) & 0x01)
+    // Display changes
     strip.show();
 }
