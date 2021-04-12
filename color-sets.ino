@@ -1,3 +1,17 @@
+//  Please note that the majority of this code is generated using the
+//  tool at adrianotiger.github.io/Neopixel-Effect-Generator/. As such,
+//  there are very few comments and I don't honestly know much of what's 
+//  going on here at a detailed level. In general, this code generates
+//  gradient color sets that slowly change. I have created five color sets
+//  (see below), but it would be very easy to create additional sets--
+//  either by duplicating the relevant functions below & changing the RGB
+//  values, or by visiting the site listed above and creating your own
+//  using the IDE. If the latter, copy only the final two functions of 
+//  the generated code and adjust it to match the examples below.
+//
+//  Annika Esau
+//  11 April 2021
+
 class ColorStrip
 {
 public:
@@ -27,34 +41,37 @@ struct ColorLoop
   ColorLoop(uint8_t totchilds, bool timebased, uint16_t tottime) {currentTime=0;currentChild=0;childs=totchilds;timeBased=timebased;cycles=tottime;}
 };
 
-// Sunset colors: light pink, deep red, dark blue
+// COLOR-SET SETUP
+// COLORSET 0: Sunset colors: light pink, deep red, dark blue
 ColorStrip sunsetStrip(30);
 struct ColorLoop sunsetLoop(1, false, 1);
 
-// Pastel colors: light purple, light pink, light green, etc.
+// COLORSET 1: Pastel colors: light purple, light pink, light green, etc.
 ColorStrip pastelStrip(30);
 struct ColorLoop pastelLoop(1, false, 1);
 
-// Patriotic/USA colors: red, blue, white
+// COLORSET 2: Patriotic/USA colors: red, blue, white
 ColorStrip usausaStrip(30);
 struct ColorLoop usausaLoop(1, false, 1);
 
-// Vandal colors: gold, silver, grey, yellow, black
+// COLORSET 3: Vandal colors: gold, silver, grey, yellow, black
 ColorStrip vandalStrip(30);
 struct ColorLoop vandalLoop(1, false, 1);
 
-// Bright rainbow colors: red, orange, yellow, green, blue, purple
+// COLORSET 4: Bright rainbow colors: red, orange, yellow, green, blue, purple
 ColorStrip rainboStrip(30);
 struct ColorLoop rainboLoop(1, false, 1);
 
 // SHARED FUNCTIONS
+//    This simply lessens excessive duplication below; they apply a color
+//    r-g-b to each of the three strips at location j.
 void setAllColor(uint16_t j, float r, float g, float b){
   strip.setPixelColor(STRIP_A(j), r, g, b);
   strip.setPixelColor(STRIP_B(j), r, g, b);
   strip.setPixelColor(STRIP_C(j), r, g, b);
 }
 
-// SUNSET FUNCTIONS
+// COLORSET 0: SUNSET FUNCTIONS
 uint8_t sunset_loop() {
   uint8_t ret = 0x00;
   switch(sunsetLoop.currentChild) {
@@ -116,7 +133,7 @@ uint8_t sunset_loop_eff() {
   return 0x01;
 }
 
-// PASTEL FUNCTIONS
+// COLORSET 1: PASTEL FUNCTIONS
 uint8_t pastel_loop() {
   uint8_t ret = 0x00;
   switch(pastelLoop.currentChild) {
@@ -174,69 +191,7 @@ uint8_t pastel_loop_eff() {
   return 0x01;
 }
 
-// RAINBOW FUNCTIONS
-uint8_t rainbo_loop() {
-  uint8_t ret = 0x00;
-  switch(rainboLoop.currentChild) {
-    case 0: 
-           ret = rainbo_loop_eff();break;
-  }
-  if(ret & 0x02) {
-    ret &= 0xfd;
-    if(rainboLoop.currentChild + 1 >= rainboLoop.childs) {
-      rainboLoop.currentChild = 0;
-      if(++rainboLoop.currentTime >= rainboLoop.cycles) {rainboLoop.currentTime = 0; ret |= 0x02;}
-    }
-    else {
-      rainboLoop.currentChild++;
-    }
-  };
-  return ret;
-}
-
-uint8_t rainbo_loop_eff() {
-    // Strip ID: 0 - Effect: Rainbow - LEDS: 30
-    // Steps: 60 - Delay: 90
-    // Colors: 6 (255.0.0, 255.114.0, 255.255.0, 54.255.79, 36.65.255, 122.16.255)
-    // Options: rainbowlen=124, toLeft=true, 
-  if(millis() - rainboStrip.effStart < 90 * (rainboStrip.effStep)) return 0x00;
-  float factor1, factor2;
-  uint16_t ind;
-  for(uint16_t j=0;j<30;j++) {
-    ind = rainboStrip.effStep + j * 0.4838709677419355;
-    switch((int)((ind % 60) / 10)) {
-      case 0: factor1 = 1.0 - ((float)(ind % 60 - 0 * 10) / 10);
-              factor2 = (float)((int)(ind - 0) % 60) / 10;
-              setAllColor(j, 255 * factor1 + 255 * factor2, 0 * factor1 + 114 * factor2, 0 * factor1 + 0 * factor2);
-              break;
-      case 1: factor1 = 1.0 - ((float)(ind % 60 - 1 * 10) / 10);
-              factor2 = (float)((int)(ind - 10) % 60) / 10;
-              setAllColor(j, 255 * factor1 + 255 * factor2, 114 * factor1 + 255 * factor2, 0 * factor1 + 0 * factor2);
-              break;
-      case 2: factor1 = 1.0 - ((float)(ind % 60 - 2 * 10) / 10);
-              factor2 = (float)((int)(ind - 20) % 60) / 10;
-              setAllColor(j, 255 * factor1 + 54 * factor2, 255 * factor1 + 255 * factor2, 0 * factor1 + 79 * factor2);
-              break;
-      case 3: factor1 = 1.0 - ((float)(ind % 60 - 3 * 10) / 10);
-              factor2 = (float)((int)(ind - 30) % 60) / 10;
-              setAllColor(j, 54 * factor1 + 36 * factor2, 255 * factor1 + 65 * factor2, 79 * factor1 + 255 * factor2);
-              break;
-      case 4: factor1 = 1.0 - ((float)(ind % 60 - 4 * 10) / 10);
-              factor2 = (float)((int)(ind - 40) % 60) / 10;
-              setAllColor(j, 36 * factor1 + 122 * factor2, 65 * factor1 + 16 * factor2, 255 * factor1 + 255 * factor2);
-              break;
-      case 5: factor1 = 1.0 - ((float)(ind % 60 - 5 * 10) / 10);
-              factor2 = (float)((int)(ind - 50) % 60) / 10;
-              setAllColor(j, 122 * factor1 + 255 * factor2, 16 * factor1 + 0 * factor2, 255 * factor1 + 0 * factor2);
-              break;
-    }
-  }
-  if(rainboStrip.effStep >= 60) {rainboStrip.Reset(); return 0x03; }
-  else rainboStrip.effStep++;
-  return 0x01;
-}
-
-// USA FUNCTIONS
+// COLORSET 2: USA FUNCTIONS
 uint8_t usausa_loop() {
   uint8_t ret = 0x00;
   switch(usausaLoop.currentChild) {
@@ -298,7 +253,7 @@ uint8_t usausa_loop_eff() {
   return 0x01;
 }
 
-// VANDAL FUNCTIONS
+// COLORSET 3: VANDAL FUNCTIONS
 uint8_t vandal_loop() {
   uint8_t ret = 0x00;
   switch(vandalLoop.currentChild) {
@@ -357,5 +312,67 @@ uint8_t vandal_loop_eff() {
   }
   if(vandalStrip.effStep >= 60) {vandalStrip.Reset(); return 0x03; }
   else vandalStrip.effStep++;
+  return 0x01;
+}
+
+// COLORSET 4: RAINBOW FUNCTIONS
+uint8_t rainbo_loop() {
+  uint8_t ret = 0x00;
+  switch(rainboLoop.currentChild) {
+    case 0: 
+           ret = rainbo_loop_eff();break;
+  }
+  if(ret & 0x02) {
+    ret &= 0xfd;
+    if(rainboLoop.currentChild + 1 >= rainboLoop.childs) {
+      rainboLoop.currentChild = 0;
+      if(++rainboLoop.currentTime >= rainboLoop.cycles) {rainboLoop.currentTime = 0; ret |= 0x02;}
+    }
+    else {
+      rainboLoop.currentChild++;
+    }
+  };
+  return ret;
+}
+
+uint8_t rainbo_loop_eff() {
+    // Strip ID: 0 - Effect: Rainbow - LEDS: 30
+    // Steps: 60 - Delay: 90
+    // Colors: 6 (255.0.0, 255.114.0, 255.255.0, 54.255.79, 36.65.255, 122.16.255)
+    // Options: rainbowlen=124, toLeft=true, 
+  if(millis() - rainboStrip.effStart < 90 * (rainboStrip.effStep)) return 0x00;
+  float factor1, factor2;
+  uint16_t ind;
+  for(uint16_t j=0;j<30;j++) {
+    ind = rainboStrip.effStep + j * 0.4838709677419355;
+    switch((int)((ind % 60) / 10)) {
+      case 0: factor1 = 1.0 - ((float)(ind % 60 - 0 * 10) / 10);
+              factor2 = (float)((int)(ind - 0) % 60) / 10;
+              setAllColor(j, 255 * factor1 + 255 * factor2, 0 * factor1 + 114 * factor2, 0 * factor1 + 0 * factor2);
+              break;
+      case 1: factor1 = 1.0 - ((float)(ind % 60 - 1 * 10) / 10);
+              factor2 = (float)((int)(ind - 10) % 60) / 10;
+              setAllColor(j, 255 * factor1 + 255 * factor2, 114 * factor1 + 255 * factor2, 0 * factor1 + 0 * factor2);
+              break;
+      case 2: factor1 = 1.0 - ((float)(ind % 60 - 2 * 10) / 10);
+              factor2 = (float)((int)(ind - 20) % 60) / 10;
+              setAllColor(j, 255 * factor1 + 54 * factor2, 255 * factor1 + 255 * factor2, 0 * factor1 + 79 * factor2);
+              break;
+      case 3: factor1 = 1.0 - ((float)(ind % 60 - 3 * 10) / 10);
+              factor2 = (float)((int)(ind - 30) % 60) / 10;
+              setAllColor(j, 54 * factor1 + 36 * factor2, 255 * factor1 + 65 * factor2, 79 * factor1 + 255 * factor2);
+              break;
+      case 4: factor1 = 1.0 - ((float)(ind % 60 - 4 * 10) / 10);
+              factor2 = (float)((int)(ind - 40) % 60) / 10;
+              setAllColor(j, 36 * factor1 + 122 * factor2, 65 * factor1 + 16 * factor2, 255 * factor1 + 255 * factor2);
+              break;
+      case 5: factor1 = 1.0 - ((float)(ind % 60 - 5 * 10) / 10);
+              factor2 = (float)((int)(ind - 50) % 60) / 10;
+              setAllColor(j, 122 * factor1 + 255 * factor2, 16 * factor1 + 0 * factor2, 255 * factor1 + 0 * factor2);
+              break;
+    }
+  }
+  if(rainboStrip.effStep >= 60) {rainboStrip.Reset(); return 0x03; }
+  else rainboStrip.effStep++;
   return 0x01;
 }
