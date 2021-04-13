@@ -18,12 +18,12 @@ volatile int brightness = 0;       // the current brightness (begins at zero)
 int maxBrightness = 255;           // sets scale of brightness (max value, ranges from 0 to maxBrightness)
 
 // Set pattern variables
-volatile int patternId = 0;       // ID of current pattern
-int numPattern = 2;               // total number of patterns
-int colorSetId = 3;
+volatile int patternId = 0;       // ID of current pattern (0=sweep, 1=flash, 2=glowy). See functions below.
+int numPattern = 2;               // highest ID# of pattern (indexing from zero, so 2 means there are 3 patterns)
+int colorSetId = 3;               // ID of current color set. (0=sunset, 1=pastel, 2=patriotic, 3=vandal, 4=rainbow). See color-sets.ino.
 
 // Set timing details
-unsigned long int interval = 60;
+unsigned long int interval = 60;  // scale of timing in milliseconds; higher = slower patterns
 
 // Main function
 void setup() {
@@ -63,12 +63,15 @@ void loop() {
   // Depending on which pattern is currently selected (via patternId), 
   //    do one cycle of that pattern.
   switch(patternId){
+    // Pattern 0: Sweep
     case 0:
       sweep();
       break;
+    // Pattern 1: Flash
     case 1:
       flash();
       break;
+    // Pattern 2: Glowy
     case 2:
       glowy();
       break;
@@ -107,7 +110,6 @@ static void sweep() {
 
 // PATTERN 1: FLASH
 // Flash entire strip at once, increasing in pace
-// TO DO: Add looping and timing
 static void flash(){
   
   // VARIABLES
