@@ -78,12 +78,14 @@ void loop() {
 // PATTERN 0: SWEEP
 // Sweep colors down all three strips at once in series of four
 static void sweep() {
+  
   // VARIABLES
   // Create storage for time markers (allows for synchronization)
   unsigned long int tempPrevMillis;
   // Choose length of the series that sweeps down the strip
   int lenSeries = 4;
 
+  // LOOP
   for(uint16_t i=0; i<(30+lenSeries); i++){
     tempPrevMillis = millis();
     if(selectColorSet(colorSetId) & 0x01){
@@ -107,13 +109,45 @@ static void sweep() {
 // Flash entire strip at once, increasing in pace
 // TO DO: Add looping and timing
 static void flash(){
-  // Turn strip on
-  selectColorSet(colorSetId);
-  strip.show();
+  
+  // VARIABLES
+  // lenCycle is the number of on/off flash pairs
+  int lenCycle = 50;
+  // startMillis is the length of time in milliseconds that each
+  //    on OR off mode will take at the beginning of this pattern
+  int startMillis = interval * 10;
+  // finalMillis is the length of time in milliseconds that each
+  //    on OR off mode will take at the end of the pattern.
+  //    If finalMillis>startMillis, this pattern will get slower
+  //    rather than faster. If they are equal, the pattern will
+  //    simply blink at a consistent rate.
+  int finalMillis = interval;
+  // tempMillis will store the length of time each on OR off mode
+  //    takes at any given point. 
+  int tempMillis;
 
-  // Turn strip off
-  strip.clear();
-  strip.show();
+  // LOOP
+  for(int i=0; i<lenCycle; i++){
+    // Set tempMillis by mapping i to the range of startMillis to 
+    //    finalMillis.
+    tempMillis = map(i, 0, lenCycle, startMillis, finalMillis);
+    
+    // Turn strip on
+    selectColorSet(colorSetId);
+    strip.show();
+    // Check if pattern has changed; exit if so
+    if(patternId != 1) break;
+    // Keep strip on for tempMillis milliseconds
+    delayMillis(millis(), tempMillis);
+  
+    // Turn strip off
+    strip.clear();
+    strip.show();
+    // Check if pattern has changed; exit if so
+    if(patternId != 1) break;
+    // Keep strip off for tempMillis milliseconds
+    delayMillis(millis(), tempMillis);
+  }
 }
 
 // PATTERN 2: GLOWY
