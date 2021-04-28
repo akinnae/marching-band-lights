@@ -1,6 +1,11 @@
 // Process a high from the interrupt input (isrPin = 10), which suggests something in the
 //    control array changed (arrPin = 9).
 void mainISR(){
+  // Read in array from arrPin
+  for(int i=0; i<4; i++){
+    arrayIn[i] = analogRead(arrPin);
+  }
+  
   // Handle brightness input
   // Read the analog input from the array (a value between 0 and 255).
   ampDialState = arrayIn[arrBrightness];
