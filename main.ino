@@ -6,10 +6,10 @@
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(N_LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 // Set control input pin IDs and their states
-const int onOffPin = 11;          // on/off switch pin
-const int momentRightPin = 12;    // momentary toggle right pin
-const int momentLeftPin = 13;     // momentary toggle left pin
-const int ampDialPin = 9;         // amplitude dial pin (analog)
+const int isrPin = 10;            // interrupt pin: indicates something has changed, so check arrPin
+const int arrPin = 9;             // array input pin
+int arrayIn[4];                     // array storage for data from array input pin
+enum arrIndex{ arrBrightness, arrLeftShow, arrRightShow, arrOnOff };
 volatile int onOffState = 0;      // on/off switch status (0=off, 1=on)
 volatile int ampDialState = 0;    // amplitude dial status
 
@@ -18,44 +18,23 @@ volatile int brightness = 0;       // the current brightness (begins at zero)
 int maxBrightness = 255;           // sets scale of brightness (max value, ranges from 0 to maxBrightness)
 
 // Set pattern variables
-volatile int patternId = 0;       // ID of current pattern (0=sweep, 1=flash, 2=glowy). See functions below.
+volatile int patternId = 2;       // ID of current pattern (0=sweep, 1=flash, 2=glowy). See functions below.
 int numPattern = 2;               // highest ID# of pattern (indexing from zero, so 2 means there are 3 patterns)
-int colorSetId = 3;               // ID of current color set. (0=sunset, 1=pastel, 2=patriotic, 3=vandal, 4=rainbow). See color-sets.ino.
+int colorSetId = 4;               // ID of current color set. (0=sunset, 1=pastel, 2=patriotic, 3=vandal, 4=rainbow). See color-sets.ino.
 
 // Set timing details
-unsigned long int interval = 60;  // scale of timing in milliseconds; higher = slower patterns
+unsigned long int interval = 200;  // scale of timing in milliseconds; higher = slower patterns
 
 // Main function
 void setup() {
+  delay(2000);
   strip.begin();
 
-  // SET UP PINS AS INTERRUPT INPUT
-  // On-Off Switch interrupts upon a *change* (up or down) in input signal.
-  //    This turns the brightness to max (if switched on) or to zero (if switched off).
-  //    The onOffPin (pin number defined above) reads this input, 
-  //    and onOffISR is the function that processes the input and changes behaviour.
-  pinMode(onOffPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(onOffPin), onOffISR, CHANGE);
-  // Moment-right Switch (ie, moving the momentary switch to the right) increments the 
-  //    light 'show'/pattern that's displaying. The input defaults to low, and 
-  //    interrupts only on rising (0->1). patternId is incremented.
-  //    The momentRightPin (pin number defined above) reads this input, 
-  //    and momentRightISR is the function that processes the input and changes behaviour.
-  pinMode(momentRightPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(momentRightPin), momentRightISR, RISING);
-  // Moment-left Switch (ie, moving the momentary switch to the left) decrements the 
-  //    light 'show'/pattern that's displaying. The input defaults to low, and 
-  //    interrupts only on rising (0->1). patternId is decremented.
-  //    The momentLeftPin (pin number defined above) reads this input, 
-  //    and momentLeftISR is the function that processes the input and changes behaviour.  
-  pinMode(momentLeftPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(momentLeftPin), momentLeftISR, RISING);
-  // Amplitude Dial interrupts upon a *change* (up or down) in input signal.
-  //    This adjusts the brightness in proportion to the change in dial position.
-  //    The ampDialPin (pin number defined above) reads this input, 
-  //    and ampDialISR is the function that processes the input and changes behaviour.
-  pinMode(ampDialPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(ampDialPin), ampDialISR, CHANGE);
+  // Set up interrupt input
+  //    Interrupts only on rising (0->1).
+  //    Upon interrupt, call mainISR function to check what in the control array changed.
+  pinMode(isrPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(isrPin), mainISR, RISING);
 }
 
 // After initializing in "setup" above, this will loop indefinitely.
