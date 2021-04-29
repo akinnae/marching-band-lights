@@ -18,7 +18,7 @@ volatile int brightness = 0;       // the current brightness (begins at zero)
 int maxBrightness = 255;           // sets scale of brightness (max value, ranges from 0 to maxBrightness)
 
 // Set pattern variables
-volatile int patternId = 2;       // ID of current pattern (0=sweep, 1=flash, 2=glowy). See functions below.
+volatile int patternId = 0;       // ID of current pattern (0=sweep, 1=flash, 2=glowy). See functions below.
 int numPattern = 2;               // highest ID# of pattern (indexing from zero, so 2 means there are 3 patterns)
 int colorSetId = 4;               // ID of current color set. (0=sunset, 1=pastel, 2=patriotic, 3=vandal, 4=rainbow). See color-sets.ino.
 
@@ -29,6 +29,7 @@ unsigned long int interval = 200;  // scale of timing in milliseconds; higher = 
 void setup() {
   delay(2000);
   strip.begin();
+  Serial.begin(9600);
 
   // Set up interrupt input
   //    Interrupts only on rising (0->1).
@@ -63,26 +64,29 @@ static void sweep() {
   
   // VARIABLES
   // Create storage for time markers (allows for synchronization)
-  unsigned long int tempPrevMillis;
+ // unsigned long int tempPrevMillis;
   // Choose length of the series that sweeps down the strip
   int lenSeries = 4;
 
   // LOOP
-  for(uint16_t i=0; i<(30+lenSeries); i++){
-    tempPrevMillis = millis();
+  for(uint16_t i=0; i<(30); i++){
+  //  tempPrevMillis = millis();
     if(selectColorSet(colorSetId) & 0x01){
       // Erase all pixels before the lit series
-      for(int j=0; j<i; j++)
-        setAllColor(j-lenSeries, 0, 0, 0);
+      for(int j=0; j<i; j++){
+        setAllColor(j, 0, 0, 0);
+
+        }
       // Erase all pixels after the lit series
-      for(int j=i; j<30; j++)
-        setAllColor(j+1, 0, 0, 0);
+      for(int j=i+lenSeries; j<30; j++){
+      setAllColor(j, 0, 0, 0);}
       // Display changes
       strip.show();
       // Check if pattern has changed; if so, exit
       if(patternId!=0) break;
       // Delay (allows for synchronization) 
-      delayMillis(tempPrevMillis, interval);
+  //    delayMillis(tempPrevMillis, interval);
+  delayMillis(millis(), interval);
     }
   }
 }
@@ -93,10 +97,10 @@ static void flash(){
   
   // VARIABLES
   // lenCycle is the number of on/off flash pairs
-  int lenCycle = 50;
+  int lenCycle = 20;
   // startMillis is the length of time in milliseconds that each
   //    on OR off mode will take at the beginning of this pattern
-  int startMillis = interval * 10;
+  int startMillis = interval;
   // finalMillis is the length of time in milliseconds that each
   //    on OR off mode will take at the end of the pattern.
   //    If finalMillis>startMillis, this pattern will get slower
