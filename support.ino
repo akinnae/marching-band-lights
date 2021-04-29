@@ -34,7 +34,7 @@ int STRIP_C(int i){
 // Delay for i milliseconds since the last check
 //    This delay *can* be interrupted.
 void delayMillis(unsigned long int start, unsigned long int i){
-  unsigned long int currMillis = 0;
+  unsigned long int currMillis = millis();
   while((currMillis - start) < i){
     currMillis = millis();
   }
